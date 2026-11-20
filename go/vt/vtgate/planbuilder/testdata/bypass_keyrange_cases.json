@@ -14,7 +14,10 @@
         },
         "TargetDestination": "ExactKeyRange(-)",
         "Query": "select count(*), col from unsharded"
-      }
+      },
+      "TablesUsed": [
+        "main.unsharded"
+      ]
     }
   },
   {
@@ -33,7 +36,10 @@
         "TargetDestination": "ExactKeyRange(-)",
         "IsDML": true,
         "Query": "update `user` set val = 1 where id = 18446744073709551616 and id = 1"
-      }
+      },
+      "TablesUsed": [
+        "main.user"
+      ]
     }
   },
   {
@@ -53,7 +59,10 @@
         "IsDML": true,
         "MultishardAutocommit": true,
         "Query": "update /*vt+ MULTI_SHARD_AUTOCOMMIT=1 */ `user` set val = 1 where id = 18446744073709551616 and id = 1"
-      }
+      },
+      "TablesUsed": [
+        "main.user"
+      ]
     }
   },
   {
@@ -73,7 +82,10 @@
         "IsDML": true,
         "MultishardAutocommit": true,
         "Query": "update /*vt+ MULTI_SHARD_AUTOCOMMIT=1 */ `user` set is_active = 0 where is_active = 1 limit 100"
-      }
+      },
+      "TablesUsed": [
+        "main.user"
+      ]
     }
   },
   {
@@ -92,7 +104,10 @@
         "TargetDestination": "ExactKeyRange(-)",
         "IsDML": true,
         "Query": "delete from `user` where is_active = 1 limit 100"
-      }
+      },
+      "TablesUsed": [
+        "main.user"
+      ]
     }
   },
   {
@@ -111,7 +126,10 @@
         "TargetDestination": "ExactKeyRange(-)",
         "IsDML": true,
         "Query": "delete from `USER` where ID = 42"
-      }
+      },
+      "TablesUsed": [
+        "main.USER"
+      ]
     }
   },
   {
@@ -134,7 +152,10 @@
         },
         "TargetDestination": "ExactKeyRange(-)",
         "Query": "select count(*), col from unsharded into outfile s3 'x.txt'"
-      }
+      },
+      "TablesUsed": [
+        "main.unsharded"
+      ]
     }
   },
   {
@@ -152,7 +173,10 @@
         },
         "TargetDestination": "ExactKeyRange(-)",
         "Query": "select * from `user` into outfile s3 'x.txt'"
-      }
+      },
+      "TablesUsed": [
+        "main.user"
+      ]
     }
   },
   {
@@ -228,7 +252,13 @@
         },
         "TargetDestination": "ExactKeyRange(-)",
         "Query": "select count(*), col from unsharded join vt_main.t1 where exists (select 1 from t2 join information_schema.`tables` where `table_name` = 't3')"
-      }
+      },
+      "TablesUsed": [
+        "information_schema.tables",
+        "main.t2",
+        "main.unsharded",
+        "vt_main.t1"
+      ]
     }
   },
   {

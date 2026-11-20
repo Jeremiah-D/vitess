@@ -14,7 +14,10 @@
         },
         "TargetDestination": "Shard(-80)",
         "Query": "select count(*), col from unsharded"
-      }
+      },
+      "TablesUsed": [
+        "main.unsharded"
+      ]
     }
   },
   {
@@ -33,7 +36,10 @@
         "TargetDestination": "Shard(-80)",
         "IsDML": true,
         "Query": "update `user` set val = 1 where id = 18446744073709551616 and id = 1"
-      }
+      },
+      "TablesUsed": [
+        "main.user"
+      ]
     }
   },
   {
@@ -52,7 +58,10 @@
         "TargetDestination": "Shard(-80)",
         "IsDML": true,
         "Query": "delete from `USER` where ID = 42"
-      }
+      },
+      "TablesUsed": [
+        "main.USER"
+      ]
     }
   },
   {
@@ -71,7 +80,10 @@
         "TargetDestination": "Shard(-80)",
         "IsDML": true,
         "Query": "insert into `USER`(ID, `NAME`) values (42, 'ms X')"
-      }
+      },
+      "TablesUsed": [
+        "main.USER"
+      ]
     }
   },
   {
@@ -90,7 +102,10 @@
         "TargetDestination": "Shard(-80)",
         "IsDML": true,
         "Query": "insert into `user`(nonid) values (2)"
-      }
+      },
+      "TablesUsed": [
+        "main.user"
+      ]
     }
   },
   {
@@ -108,7 +123,10 @@
         },
         "TargetDestination": "Shard(-80)",
         "Query": "select count(*), col from unsharded into outfile s3 'x.txt'"
-      }
+      },
+      "TablesUsed": [
+        "main.unsharded"
+      ]
     }
   },
   {
@@ -126,7 +144,10 @@
         },
         "TargetDestination": "Shard(-80)",
         "Query": "select * from `user` into outfile s3 'x.txt'"
-      }
+      },
+      "TablesUsed": [
+        "main.user"
+      ]
     }
   },
   {
@@ -239,7 +260,10 @@
         "TargetDestination": "Shard(-80)",
         "Query": "select /*vt+ QUERY_TIMEOUT_MS=100 */ count(*), col from `user`",
         "QueryTimeout": 100
-      }
+      },
+      "TablesUsed": [
+        "main.user"
+      ]
     }
   },
   {
@@ -259,7 +283,10 @@
         "IsDML": true,
         "Query": "update /*vt+ QUERY_TIMEOUT_MS=100 */ `user` set val = 1 where id = 1",
         "QueryTimeout": 100
-      }
+      },
+      "TablesUsed": [
+        "main.user"
+      ]
     }
   },
   {
@@ -279,7 +306,10 @@
         "IsDML": true,
         "Query": "delete /*vt+ QUERY_TIMEOUT_MS=100 */ from `USER` where ID = 42",
         "QueryTimeout": 100
-      }
+      },
+      "TablesUsed": [
+        "main.USER"
+      ]
     }
   },
   {
@@ -299,7 +329,10 @@
         "IsDML": true,
         "Query": "insert /*vt+ QUERY_TIMEOUT_MS=100 */ into `USER`(ID, `NAME`) values (42, 'ms X')",
         "QueryTimeout": 100
-      }
+      },
+      "TablesUsed": [
+        "main.USER"
+      ]
     }
   },
   {
@@ -317,7 +350,13 @@
         },
         "TargetDestination": "Shard(-80)",
         "Query": "select count(*), col from unsharded join vt_main.t1 where exists (select 1 from t2 join information_schema.`tables` where `table_name` = 't3')"
-      }
+      },
+      "TablesUsed": [
+        "information_schema.tables",
+        "main.t2",
+        "main.unsharded",
+        "vt_main.t1"
+      ]
     }
   },
   {
@@ -364,6 +403,106 @@
           }
         ]
       }
+    }
+  },
+  {
+    "comment": "select for update bypass records tables used",
+    "query": "select * from unsharded where id = 1 for update",
+    "plan": {
+      "Type": "Passthrough",
+      "QueryType": "SELECT",
+      "Original": "select * from unsharded where id = 1 for update",
+      "Instructions": {
+        "OperatorType": "Send",
+        "Keyspace": {
+          "Name": "main",
+          "Sharded": false
+        },
+        "TargetDestination": "Shard(-80)",
+        "Query": "select * from unsharded where id = 1 for update"
+      },
+      "TablesUsed": [
+        "main.unsharded"
+      ]
+    }
+  },
+  {
+    "comment": "select without tables bypass records no tables used",
+    "query": "select 1",
+    "plan": {
+      "Type": "Passthrough",
+      "QueryType": "SELECT",
+      "Original": "select 1",
+      "Instructions": {
+        "OperatorType": "Send",
+        "Keyspace": {
+          "Name": "main",
+          "Sharded": false
+        },
+        "TargetDestination": "Shard(-80)",
+        "Query": "select 1 from dual"
+      }
+    }
+  },
+  {
+    "comment": "select from dual bypass records no tables used",
+    "query": "select * from dual",
+    "plan": {
+      "Type": "Passthrough",
+      "QueryType": "SELECT",
+      "Original": "select * from dual",
+      "Instructions": {
+        "OperatorType": "Send",
+        "Keyspace": {
+          "Name": "main",
+          "Sharded": false
+        },
+        "TargetDestination": "Shard(-80)",
+        "Query": "select * from dual"
+      }
+    }
+  },
+  {
+    "comment": "join bypass records both tables used",
+    "query": "select * from unsharded join unsharded_a on unsharded.id = unsharded_a.id",
+    "plan": {
+      "Type": "Passthrough",
+      "QueryType": "SELECT",
+      "Original": "select * from unsharded join unsharded_a on unsharded.id = unsharded_a.id",
+      "Instructions": {
+        "OperatorType": "Send",
+        "Keyspace": {
+          "Name": "main",
+          "Sharded": false
+        },
+        "TargetDestination": "Shard(-80)",
+        "Query": "select * from unsharded join unsharded_a on unsharded.id = unsharded_a.id"
+      },
+      "TablesUsed": [
+        "main.unsharded",
+        "main.unsharded_a"
+      ]
+    }
+  },
+  {
+    "comment": "cte bypass records only real tables used",
+    "query": "with c as (select * from unsharded) select * from c",
+    "plan": {
+      "Type": "Passthrough",
+      "QueryType": "SELECT",
+      "Original": "with c as (select * from unsharded) select * from c",
+      "Instructions": {
+        "OperatorType": "Send",
+        "Keyspace": {
+          "Name": "main",
+          "Sharded": false
+        },
+        "TargetDestination": "Shard(-80)",
+        "Query": "with c as (select * from unsharded) select * from c"
+      },
+      "TablesUsed": [
+        "main.unsharded"
+      ]
     }
   }
 ]
